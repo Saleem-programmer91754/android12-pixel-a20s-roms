@@ -1,49 +1,51 @@
 name: Build A20s Android 12 ROM
 
-on: workflow_dispatch:
+on:
+  workflow_dispatch:
 
-jobs: build: runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-steps:
-- name: Checkout ROM manifest
-  uses: actions/checkout@v3
+    steps:
+      - name: Checkout ROM manifest
+        uses: actions/checkout@v3
 
-- name: Set up build environment
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev \
-      gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev \
-      libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig \
-      repo ccache python-is-python3 python3-pip liblz4-tool bc lzop imagemagick \
-      libncurses5 python3-virtualenv openjdk-11-jdk
+      - name: Set up build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev \
+            gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev \
+            libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig \
+            repo ccache python-is-python3 python3-pip liblz4-tool bc lzop imagemagick \
+            libncurses5 python3-virtualenv openjdk-11-jdk
 
-- name: Initialize ROM source
-  run: |
-    mkdir rom && cd rom
-    repo init -u https://github.com/PixelExperience/manifest -b twelve-plus
-    repo sync -j4 --force-sync --no-tags --no-clone-bundle
+      - name: Initialize ROM source
+        run: |
+          mkdir rom && cd rom
+          repo init -u https://github.com/PixelExperience/manifest -b twelve-plus
+          repo sync -j4 --force-sync --no-tags --no-clone-bundle
 
-- name: Clone device trees
-  run: |
-    cd rom
-    git clone https://github.com/Saleem-programmer91754/device_samsung_a20s.git -b android-12 device/samsung/a20s
-    git clone https://github.com/Saleem-programmer91754/vendor_samsung_a20s.git -b android-12 vendor/samsung/a20s
-    git clone https://github.com/Saleem-programmer91754/kernel_samsung_a20s.git -b android-12 kernel/samsung/a20s
+      - name: Clone device trees
+        run: |
+          cd rom
+          git clone https://github.com/Saleem-programmer91754/device_samsung_a20s.git -b android-12 device/samsung/a20s
+          git clone https://github.com/Saleem-programmer91754/vendor_samsung_a20s.git -b android-12 vendor/samsung/a20s
+          git clone https://github.com/Saleem-programmer91754/kernel_samsung_a20s.git -b android-12 kernel/samsung/a20s
 
-- name: Prepare environment and lunch
-  run: |
-    cd rom
-    source build/envsetup.sh
-    lunch aosp_a20s-userdebug
+      - name: Prepare environment and lunch
+        run: |
+          cd rom
+          source build/envsetup.sh
+          lunch aosp_a20s-userdebug
 
-- name: Build ROM
-  run: |
-    cd rom
-    make -j$(nproc) systemimage
+      - name: Build ROM
+        run: |
+          cd rom
+          make -j$(nproc) systemimage
 
-- name: Upload ROM artifact
-  uses: actions/upload-artifact@v3
-  with:
-    name: system-img
-    path: rom/out/target/product/a20s/system.img
-
+      - name: Upload ROM artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: system-img
+          path: rom/out/target/product/a20s/system.img
